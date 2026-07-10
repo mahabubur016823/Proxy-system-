@@ -1,0 +1,146 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; user-select: none; }
+
+.player-wrapper { position: relative; width: 100vw; height: 100vh; background: #000; }
+video { width: 100%; height: 100%; object-fit: contain; }
+
+/* প্রবেশ গেটওয়ে স্ক্রিন */
+.entry-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+    z-index: 100; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; padding: 20px; transition: opacity 0.5s ease;
+}
+.entry-overlay h1 { font-size: 3rem; margin-bottom: 20px; color: #ff0000; text-shadow: 0 0 15px rgba(255,0,0,0.5); letter-spacing: 1px; }
+.entry-btn {
+    background: #ff0000; color: white; border: none; padding: 15px 40px; font-size: 1.2rem;
+    font-weight: bold; border-radius: 30px; cursor: pointer; transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(255,0,0,0.4);
+}
+.entry-btn:hover { background: #cc0000; transform: scale(1.05); }
+
+/* সাইডবার (চ্যানেল তালিকা) */
+.sidebar { 
+    position: absolute; 
+    left: 20px; 
+    top: 50%; 
+    transform: translateY(-50%);
+    width: 260px; 
+    height: 80vh; 
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(25px); 
+    border-radius: 14px; 
+    border: 1.5px solid #ff0000; 
+    padding: 15px; 
+    z-index: 10; 
+    display: flex; 
+    flex-direction: column; 
+    transition: opacity 0.4s, visibility 0.4s;
+}
+
+/* সাইডবার টাইটেল */
+.sidebar-title {
+    font-size: 18px; 
+    font-weight: 800; 
+    color: #fff; 
+    text-align: left;
+    margin-bottom: 15px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sidebar-title i { color: #ff0000; }
+
+.channel-container { overflow-y: auto; flex-grow: 1; padding-right: 5px; }
+.channel-container::-webkit-scrollbar { width: 4px; }
+.channel-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+.channel-container::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
+
+/* চ্যানেল আইটেম */
+.channel-item { 
+    display: flex; 
+    align-items: center; 
+    padding: 10px 12px; 
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: all 0.25s ease;
+}
+.channel-item:hover { 
+    background: rgba(255, 255, 255, 0.08); 
+    border-color: rgba(255, 255, 255, 0.25);
+}
+.channel-item.active { 
+    background: rgba(255, 0, 0, 0.15); 
+    border-color: #ff0000; 
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); 
+}
+.channel-item img { width: 42px; height: 28px; object-fit: contain; margin-right: 12px; border-radius: 3px; background: rgba(255,255,255,0.05); }
+.channel-item span { font-size: 15px; font-weight: 600; color: #fff; }
+
+/* কন্ট্রোলস */
+.bottom-right-controls {
+    position: absolute; bottom: 30px; right: 30px;
+    display: flex; align-items: center; gap: 15px; z-index: 10;
+    background: rgba(0,0,0,0.8); padding: 12px 22px; border-radius: 30px;
+    backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+    transition: opacity 0.4s, visibility 0.4s;
+}
+
+.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+input[type=range] { accent-color: #ff0000; cursor: pointer; }
+.icon-btn { color: white; cursor: pointer; font-size: 22px; background: none; border: none; }
+
+/* লোডার এনিমেশন */
+.loader-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); display: none; align-items: center;
+    justify-content: center; z-index: 5; pointer-events: none;
+}
+.spinner {
+    width: 60px; height: 60px; border: 5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%; border-top-color: #ff0000;
+    animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* এরর নোটিফিকেশন ফ্রেম */
+.error-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9); display: none; align-items: center;
+    justify-content: center; z-index: 15; text-align: center; padding: 20px;
+}
+.error-card {
+    position: relative; /* ক্লোজ বাটনের পজিশনিং ঠিক রাখার জন্য */
+    background: #111; border: 2px solid #ff0000; border-radius: 20px;
+    padding: 40px 30px 30px 30px; max-width: 450px; box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+}
+.error-card i { font-size: 50px; color: #ff0000; margin-bottom: 15px; }
+.error-card h3 { font-size: 22px; margin-bottom: 10px; }
+.error-card p { font-size: 15px; color: #ccc; margin-bottom: 20px; line-height: 1.5; }
+
+/* এরর ক্লোজ ক্রস বাটন */
+.close-error-btn {
+    position: absolute; top: 10px; right: 15px; background: none;
+    border: none; color: #ff0000; font-size: 32px; font-weight: bold;
+    cursor: pointer; transition: color 0.2s ease, transform 0.2s ease;
+}
+.close-error-btn:hover { color: #fff; transform: scale(1.1); }
+
+.wa-btn {
+    display: inline-flex; align-items: center; gap: 10px; background: #25d366;
+    color: white; text-decoration: none; padding: 12px 25px; font-weight: bold;
+    border-radius: 30px; transition: transform 0.2s;
+}
+.wa-btn:hover { transform: scale(1.05); }
+
+/* ডেক্সটপ/স্মার্ট টিভি মিডিয়া কুয়েরি */
+@media (min-width: 992px) {
+    .sidebar { width: 310px; left: 40px; }
+    .channel-item img { width: 50px; height: 32px; }
+    .channel-item span { font-size: 16px; }
+}
