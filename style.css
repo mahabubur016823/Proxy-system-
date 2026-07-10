@@ -1,334 +1,85 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Rajdhani', sans-serif;
-    user-select: none; 
-    -webkit-user-select: none;
-    outline: none;
-}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
 
-body {
-    background: radial-gradient(circle at center bottom, #2b2b2b 0%, #000000 80%);
-    color: #ffffff;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 30px 50px;
-    overflow: hidden;
-}
+<script>
+    (function() {    
+        const currentToken = sessionStorage.getItem('allowed_entry');
+        const expectedPrefix = btoa("RYUOX_SECURE_ENTRY_");
+        
+        let isValid = false;
+        if (currentToken) {
+            try {
+                const decoded = atob(currentToken);
+                if (decoded.startsWith("RYUOX_SECURE_ENTRY_")) {
+                    isValid = true;
+                }
+            } catch(e) {
+                isValid = false;
+            }
+        }
 
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #ff0000;
-    padding-bottom: 12px;
-    margin-bottom: 10px;
-    width: 100%;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-}
+        if (!isValid) {           
+            window.location.href = '../index.html'; 
+        }
+    })();
+</script>
 
-.logo {
-    font-family: 'Teko', sans-serif;
-    font-size: 48px;
-    letter-spacing: 2px;
-    font-weight: 600;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RYVOX TV - Professional</title>
+    <link class="favicon" rel="icon" type="image/png" href="https://raw.githubusercontent.com/ryvoxtb/image/refs/heads/main/icon/tv.png">
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="style.css">
+    <!-- HLS.js for stream playback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js"></script>
+    <!-- Blueimp MD5 library for generating secure tokens -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+    <!-- Icons helper -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
 
-.logo-desktop {
-    color: #ffffff;
-}
+<div class="player-wrapper" id="playerWrapper">
+    <!-- ১. টপ হেডার -->
+    <div class="top-header">RYVOX TV</div>
 
-.logo-mobile {
-    display: none;
-}
+    <!-- ২. ভিডিও এরিয়া ও প্লেয়ার ওয়ান কন্ট্রোলস -->
+    <div class="video-container">
+        <video id="video" playsinline></video>
 
-.brand-red {
-    color: #ff0000;
-}
+        <div class="loader-overlay" id="loaderOverlay">
+            <div class="spinner"></div>
+        </div>
 
-.brand-white {
-    color: #ffffff;
-}
+        <div class="error-overlay" id="errorOverlay">
+            <div class="error-card">
+                <button class="close-error-btn" id="closeErrorBtn">&times;</button>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3>স্ট্রীম অফলাইন বা টেকনিক্যাল সমস্যা</h3>
+                <p>সাময়িক সমস্যার কারণে চ্যানেলটি লোড করা যাচ্ছে না। দয়া করে আমাদের কারিগরি টিমের সাথে এখনই হোয়াটসঅ্যাপে যোগাযোগ করুন।</p>
+                <a href="https://wa.me/8801872173839" target="_blank" class="wa-btn" id="waBtn">
+                    <i class="fab fa-whatsapp"></i> হোয়াটসঅ্যাপে যোগাযোগ করুন
+                </a>
+            </div>
+        </div>
 
-.clock {
-    font-family: 'Teko', sans-serif;
-    font-size: 38px;
-    letter-spacing: 1px;
-    color: #ffffff;
-}
+        <!-- ভলিউম ও ফুলস্ক্রিন বাটন ভিডিওর উপরে স্থানান্তরিত -->
+        <div class="bottom-right-controls" id="controls">
+            <i class="fa fa-volume-up"></i>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+            <button class="icon-btn" id="fullscreen"><i class="fa fa-expand"></i></button>
+        </div>
+    </div>
 
-.user-icon {
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-}
+    <!-- ৩. টিভি চ্যানেল লিস্ট গ্রিড -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-title"><i class="fa-solid fa-circle-play"></i> TV List</div>
+        <div class="channel-container" id="channelList"></div>
+    </div>
+</div>
 
-.user-icon svg {
-    width: 90%;
-    height: 90%;
-    fill: #ffffff;
-}
-
-.user-icon:focus, .user-icon:hover {
-    transform: scale(1.1);
-    border-color: #ff0000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
-}
-
-.main-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-    margin: 15px 0;
-    width: 100%;
-}
-
-.cards-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.card {
-    background: linear-gradient(to right, #000000 0%, #200000 40%, #c10000 100%);
-    border: 3px solid #ffffff;
-    border-radius: 25px;
-    aspect-ratio: 1.15 / 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 25px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-    text-decoration: none;
-    color: white;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-}
-
-.card:focus, .card:hover {
-    transform: scale(1.04);
-    box-shadow: 0 0 35px rgba(255, 255, 255, 0.9);
-    border-color: #ff0000;
-}
-
-.icon-wrapper {
-    width: 130px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.card svg {
-    width: 100%;
-    height: 100%;
-    fill: #ffffff;
-}
-
-.card h2 {
-    font-size: 48px;
-    font-weight: 700;
-    margin-top: 25px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-}
-
-.app-footer {
-    display: flex;
-    justify-content: flex-start;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.bottom-buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    width: auto;
-}
-
-.action-btn {
-    width: 250px;
-    height: 52px;
-    background: #000000;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 15px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-    font-size: 15px;
-    transition: all 0.2s ease;
-    border: none;
-}
-
-.apk-btn {
-    border-radius: 10px;
-    position: relative;
-}
-
-.apk-btn::before {
-    content: '';
-    position: absolute;
-    top: -2px; bottom: -2px; left: -2px; right: -2px;
-    background: linear-gradient(90deg, #00f2fe, #ff0844, #ffb199);
-    border-radius: 12px;
-    z-index: -1;
-}
-
-.apk-btn span {
-    background: linear-gradient(90deg, #00f2fe, #ffb199);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.apk-btn svg {
-    width: 24px;
-    height: 24px;
-    fill: #00f2fe;
-}
-
-.apk-btn:focus, .apk-btn:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 20px rgba(0, 242, 254, 0.7);
-}
-
-.wa-btn {
-    border-radius: 10px;
-    position: relative;
-}
-
-.wa-btn::before {
-    content: '';
-    position: absolute;
-    top: -2px; bottom: -2px; left: -2px; right: -2px;
-    background: linear-gradient(90deg, #25d366, #128c7e);
-    border-radius: 12px;
-    z-index: -1;
-}
-
-.wa-btn span {
-    color: #25d366;
-}
-
-.wa-btn svg {
-    width: 24px;
-    height: 24px;
-    fill: #25d366;
-}
-
-.wa-btn:focus, .wa-btn:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 20px rgba(37, 211, 102, 0.7);
-}
-
-.focusable:focus-visible, .focusable:focus {
-    outline: 3px solid #ff0000 !important;
-    outline-offset: 4px;
-}
-
-@media (max-width: 992px) {
-    body {
-        padding: 20px;
-        height: 100vh;
-        height: 100dvh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .app-header {
-        padding-bottom: 8px;
-        margin-bottom: 15px;
-        width: 100%;
-        max-width: none;
-    }
-
-    .logo-desktop {
-        display: none;
-    }
-
-    .logo-mobile {
-        display: inline;
-    }
-
-    .logo {
-        font-size: 32px;
-    }
-
-    .clock {
-        font-size: 26px;
-    }
-
-    .main-content {
-        margin: 5px 0;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .cards-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        max-width: none;
-    }
-
-    .card:nth-child(1) {
-        grid-column: span 2;
-        aspect-ratio: 1.8 / 1;
-    }
-
-    .card {
-        aspect-ratio: 1.1 / 1;
-        padding: 15px;
-        border-radius: 15px;
-    }
-
-    .card h2 {
-        font-size: 24px;
-        margin-top: 15px;
-    }
-
-    .icon-wrapper {
-        width: 80px;
-        height: 60px;
-    }
-
-    .app-footer {
-        margin-top: 15px;
-        justify-content: center;
-        width: 100%;
-        max-width: none;
-    }
-
-    .bottom-buttons {
-        flex-direction: column;
-        width: 100%;
-        gap: 12px;
-    }
-
-    .action-btn {
-        width: 100%;
-        height: 50px;
-    }
-}
+<!-- JS Link -->
+<script src="app.js"></script>
+</body>
+</html>
