@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+
+<script>
+    (function() {
+        const currentToken = sessionStorage.getItem('allowed_entry');
+        const expectedPrefix = btoa("RYUOX_SECURE_ENTRY_");
+        
+        let isValid = false;
+        if (currentToken) {
+            try {
+                const decoded = atob(currentToken);
+                if (decoded.startsWith("RYUOX_SECURE_ENTRY_")) {
+                    isValid = true;
+                }
+            } catch(e) {
+                isValid = false;
+            }
+        }
+
+        if (!isValid) {
+            window.location.href = '../sports.html'; 
+        }
+    })();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RYVOX TV - Professional</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ryvoxtb/image/refs/heads/main/icon/tv.png">
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="style.css">
+    <!-- HLS.js for stream playback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js"></script>
+    <!-- Blueimp MD5 library for generating secure tokens -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+    <!-- Icons helper -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+
+<div class="entry-overlay" id="entryOverlay">
+    <h1>RYVOX TV</h1>
+    <p style="margin-bottom: 30px; color: #aaa; max-width: 500px;">লাইভ টিভি সেরা অভিজ্ঞতার সাথে উপভোগ করতে নিচের প্রবেশ করুন বাটনে ক্লিক করুন।</p>
+    <button class="entry-btn" onclick="startApp()"><i class="fa fa-play-circle"></i> প্রবেশ করুন</button>
+</div>
+
+<div class="player-wrapper" id="playerWrapper">
+    <video id="video" playsinline></video>
+
+    <!-- বাফারিং বা লোডিং ইন্ডিকেটর -->
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- সার্ভিস ইরর হ্যান্ডলিং স্ক্রিন -->
+    <div class="error-overlay" id="errorOverlay">
+        <div class="error-card">
+            <!-- এরর মেসেজ কেটে দেওয়ার জন্য ক্রস বাটন -->
+            <button class="close-error-btn" id="closeErrorBtn">&times;</button>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>স্ট্রীম অফলাইন বা টেকনিক্যাল সমস্যা</h3>
+            <p>সাময়িক সমস্যার কারণে চ্যানেলটি লোড করা যাচ্ছে না। দয়া করে আমাদের কারিগরি টিমের সাথে এখনই হোয়াটসঅ্যাপে যোগাযোগ করুন।</p>
+            <a href="https://wa.me/8801872173839" target="_blank" class="wa-btn" id="waBtn">
+                <i class="fab fa-whatsapp"></i> হোয়াটসঅ্যাপে যোগাযোগ করুন (01872-173839)
+            </a>
+        </div>
+    </div>
+
+    <!-- সাইডবার চ্যানেল ক্যাটাগরি -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-title"><i class="fa-solid fa-circle-play"></i> RYVOX TV LIST</div>
+        <div class="channel-container" id="channelList"></div>
+    </div>
+
+    <!-- কন্ট্রোল প্যানেল -->
+    <div class="bottom-right-controls" id="controls">
+        <i class="fa fa-volume-up"></i>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+        <button class="icon-btn" id="fullscreen"><i class="fa fa-expand"></i></button>
+    </div>
+</div>
+
+<!-- JS Link -->
+<script src="app.js"></script>
+</body>
+</html>
